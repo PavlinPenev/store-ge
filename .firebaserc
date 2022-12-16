@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "store-ge": {
+      "hosting": {
+        "store-ge-ui": [
+          "store-ge"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "store-ge"
+  }
+}

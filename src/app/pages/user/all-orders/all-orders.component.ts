@@ -23,6 +23,8 @@ export class AllOrdersComponent implements OnInit {
   dataSource = new MatTableDataSource();
   orders!: AllOrdersResponse;
 
+  areOrdersLoading: boolean = true;
+
   userId: string = '';
 
   searchFormControl = new UntypedFormControl('');
@@ -132,6 +134,8 @@ export class AllOrdersComponent implements OnInit {
   }
 
   private getAllOrders(request: AllOrdersRequest): void {
+    this.areOrdersLoading = true;
+
     this.ordersService
       .getUserOrders(request)
       .pipe(
@@ -139,6 +143,8 @@ export class AllOrdersComponent implements OnInit {
         first()
       )
       .subscribe((response) => {
+        this.areOrdersLoading = false;
+
         this.orders = response;
 
         this.dataSource.data = this.orders.items;

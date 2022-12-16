@@ -14,6 +14,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { AddOrderComponent } from './add-order/add-order.component';
 import { MatTableDataSource } from '@angular/material/table';
+import { Order } from 'src/app/models/order.model';
 
 @Component({
   selector: 'app-orders-page',
@@ -22,7 +23,9 @@ import { MatTableDataSource } from '@angular/material/table';
 })
 export class OrdersPageComponent implements OnInit, OnDestroy {
   @ViewChild('paginator', { static: true }) paginator!: MatPaginator;
-  dataSource = new MatTableDataSource();
+  dataSource = new MatTableDataSource<Order>();
+
+  areOrdersLoading: boolean = true;
 
   searchFormControl = new UntypedFormControl('');
 
@@ -100,6 +103,7 @@ export class OrdersPageComponent implements OnInit, OnDestroy {
           first()
         )
         .subscribe((response) => {
+          this.areOrdersLoading = false;
           this.orders = response;
 
           this.dataSource.data = this.orders.items;
@@ -173,12 +177,18 @@ export class OrdersPageComponent implements OnInit, OnDestroy {
   }
 
   private getStoreOrders(request: OrdersRequest) {
+    this.areOrdersLoading = true;
+
     this.ordersService
       .getStoreOrders(request)
       .pipe(
         filter((x) => !!x),
         first()
       )
-      .subscribe((response) => (this.orders = response));
+      .subscribe((response) => {
+        this.areOrdersLoading = false;
+        this.orders = response;
+        this.dataSource.data = response.items;
+      });
   }
 }

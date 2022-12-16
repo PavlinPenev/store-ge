@@ -10,6 +10,21 @@
     }
 }
 
+.spinner-wrapper{
+    position: absolute;
+    height: 38%;
+    width: 50%;
+    background-color: rgba(0, 0, 0, 0.3);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    mat-spinner {
+        position: sticky;
+    }
+}
+
 .header-wrapper {
     margin-bottom: 20px;
 }
@@ -87,6 +102,7 @@ mat-divider {
 
 .table-wrapper {
     overflow: auto;
+    width: 100%;
 }
 
 mat-paginator {

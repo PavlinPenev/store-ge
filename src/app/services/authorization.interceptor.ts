@@ -8,22 +8,21 @@ import {
 } from '@angular/common/http';
 import { AccountsService } from './accounts.service';
 import { catchError, switchMap, throwError } from 'rxjs';
-import { CookieService } from 'ngx-cookie-service';
+import { environment } from 'src/environments/environment';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   isRefreshing: boolean = false;
 
-  constructor(
-    private accountsService: AccountsService,
-    private cookieService: CookieService
-  ) {}
+  constructor(private accountsService: AccountsService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler) {
     const accessToken = this.accountsService.getAccessToken();
     request = request.clone({
       setHeaders: {
         Authorization: 'Bearer ' + accessToken,
+        'Access-Control-Allow-Origin': environment.webApiBaseUrl,
+        'Access-Control-Allow-Credentials': 'true',
       },
     });
     return next.handle(request).pipe(
@@ -45,8 +44,8 @@ export class AuthInterceptor implements HttpInterceptor {
         return this.accountsService.refreshAccessToken().pipe(
           switchMap((response) => {
             this.isRefreshing = false;
-            this.cookieService.set('access_token', response.accessToken);
-            this.cookieService.set('refresh_token', response.refreshToken);
+            sessionStorage.setItem('access_token', response.accessToken);
+            sessionStorage.setItem('refresh_token', response.refreshToken);
 
             return next.handle(request);
           }),

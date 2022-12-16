@@ -7,6 +7,9 @@
     </div>
     <mat-divider></mat-divider>
     <div class="table-wrapper">
+        <div *ngIf="areOrdersLoading" class="spinner-wrapper">
+            <mat-spinner diameter="100" color="accent"></mat-spinner>
+        </div>
         <mat-table
             class="table"
             matSort
@@ -66,7 +69,7 @@
             <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
             <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
         </mat-table>
-        <div *ngIf="!orders || orders.totalItemsCount === 0" class="empty-state">
+        <div *ngIf="!orders || orders.items.length === 0" class="empty-state">
             {{constants.NO_ORDERS_FOUND}}
         </div>
         <mat-paginator #paginator (page)="pageChanged()" [length]="orders ? orders.totalItemsCount : 0" [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>

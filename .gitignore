@@ -390,3 +390,7 @@ FodyWeavers.xsd
 
 # Angular Cache
 .angular/cache/
+# Firebase
+.firebase
+*-debug.log
+.runtimeconfig.json

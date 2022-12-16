@@ -1,19 +1,16 @@
 import { Location } from '@angular/common';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatPaginator } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service';
 import { debounceTime, filter, first, Subject } from 'rxjs';
 import { MeasurementUnitEnum } from 'src/app/models/measurement-unit.enum';
-import { Order } from 'src/app/models/order.model';
 import { ProductsResponse } from 'src/app/models/products-response.model';
 import { StoreProductsRequest } from 'src/app/models/store-products-request.model';
 import { StoreTypeEnum } from 'src/app/models/store-type.enum';
 import { Store } from 'src/app/models/store.model';
-import { Supplier } from 'src/app/models/supplier.model';
 import { ProductsService } from 'src/app/services/products.service';
 import { StoresService } from 'src/app/services/stores.service';
 import * as constants from 'src/assets/text.constants';
@@ -38,6 +35,7 @@ export class StorePageComponent implements OnInit {
   decodedToken: any = '';
 
   dataSource = new MatTableDataSource();
+  areProductsLoading = true;
 
   searchField = new UntypedFormControl('');
 
@@ -108,16 +106,15 @@ export class StorePageComponent implements OnInit {
     private suppliersService: SuppliersService,
     private route: ActivatedRoute,
     private router: Router,
-    private location: Location,
-    private cookieService: CookieService
+    private location: Location
   ) {}
 
   ngOnInit(): void {
     this.decodedToken = this.jwtHelper.decodeToken(
-      this.cookieService.get('access_token')
+      sessionStorage.getItem('access_token')!
     );
 
-    this.userId = this.cookieService.get('uid');
+    this.userId = sessionStorage.getItem('uid')!;
     this.storeId = this.route.snapshot.params['storeId'];
 
     if (!this.decodedToken.role.includes('Admin')) {
@@ -273,6 +270,7 @@ export class StorePageComponent implements OnInit {
   }
 
   private getProducts(request: StoreProductsRequest) {
+    this.areProductsLoading = true;
     this.productsService
       .getStoreProducts(this.productsRequest)
       .pipe(
@@ -283,6 +281,7 @@ export class StorePageComponent implements OnInit {
         this.products = response;
 
         this.dataSource.data = this.products.items;
+        this.areProductsLoading = false;
       });
   }
 }

@@ -13,6 +13,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { ConfirmEmailPageComponent } from './pages/confirm-email-page/confirm-email-page.component';
 import { ForgottenPageComponent } from './pages/forgotten-page/forgotten-page.component';
 import { ResetPasswordPageComponent } from './pages/reset-password-page/reset-password-page.component';
+import { environment } from 'src/environments/environment';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 
 @NgModule({
   declarations: [
@@ -32,6 +35,8 @@ import { ResetPasswordPageComponent } from './pages/reset-password-page/reset-pa
     BrowserAnimationsModule,
     HttpClientModule,
     SharedModule,
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

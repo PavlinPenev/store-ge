@@ -28,6 +28,8 @@ export class SuppliersPageComponent implements OnInit {
   store!: Store;
   suppliers!: SuppliersResponse;
 
+  areSuppliersLoading: boolean = true;
+
   userId: string = '';
   storeId: string = '';
 
@@ -151,6 +153,7 @@ export class SuppliersPageComponent implements OnInit {
   }
 
   private getSuppliers(request: SuppliersRequest) {
+    this.areSuppliersLoading = true;
     this.suppliersService
       .getUserSuppliersPaged(request)
       .pipe(
@@ -158,6 +161,8 @@ export class SuppliersPageComponent implements OnInit {
         first()
       )
       .subscribe((response) => {
+        this.areSuppliersLoading = false;
+
         this.suppliers = response;
 
         this.dataSource.data = this.suppliers.items;

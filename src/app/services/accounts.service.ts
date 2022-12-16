@@ -5,7 +5,6 @@ import {
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service';
 import { catchError, filter, first, Observable, of, throwError } from 'rxjs';
 import { ConfirmEmailRequest } from '../models/confirm-email.model';
 import { LoginRequest } from '../models/login-request.model';
@@ -30,11 +29,15 @@ import { User } from '../models/user.model';
 import { environment } from 'src/environments/environment';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { RegisterCashierRequest } from '../models/register-cashier-request.model';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import * as constants from 'src/assets/text.constants';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AccountsService {
+  constants = constants;
+
   headers = new HttpHeaders().set('Content-Type', 'application/json');
   loggedUser!: User;
   env = environment;
@@ -49,20 +52,16 @@ export class AccountsService {
     return of(this.isUserAdminCheck());
   }
 
-  constructor(
-    private http: HttpClient,
-    private cookieService: CookieService,
-    private router: Router
-  ) {}
+  constructor(private http: HttpClient, private router: Router, public snackBar: MatSnackBar) {}
 
   getAccessToken() {
-    return this.cookieService.get('access_token');
+    return sessionStorage.getItem('access_token');
   }
 
   isUserAdminCheck(): boolean {
     const token = this.getAccessToken();
 
-    const decodedToken = this.jwtHelper.decodeToken(token);
+    const decodedToken = this.jwtHelper.decodeToken(token!);
 
     return decodedToken.role.includes('Admin');
   }
@@ -71,6 +70,14 @@ export class AccountsService {
     return this.http
       .post<any>(REGISTER_ENDPOINT, request)
       .pipe(
+        catchError((errorResponse: HttpErrorResponse) => {
+          this.snackBar.open(constants.USERNAME_OR_EMAIL_ALREADY_TAKEN, constants.CLOSE, {
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+          });
+  
+          return throwError(() => errorResponse.message)
+        }) ,
         filter((x) => !!x),
         first()
       )
@@ -85,40 +92,31 @@ export class AccountsService {
     return this.http
       .post<LoginResponse>(LOGIN_ENDPOINT, request)
       .subscribe((response: LoginResponse) => {
-        this.cookieService.set('access_token', response.accessToken, {
-          path: '/',
-          domain: this.env.cookieBaseDomain,
-        });
-        this.cookieService.set('refresh_token', response.refreshToken, {
-          path: '/',
-          domain: this.env.cookieBaseDomain,
-        });
-        this.cookieService.set('uid', response.id, {
-          path: '/',
-          domain: this.env.cookieBaseDomain,
-        });
+        sessionStorage.setItem('access_token', response.accessToken);
+        sessionStorage.setItem('refresh_token', response.refreshToken);
+        sessionStorage.setItem('uid', response.id);
 
         this.router.navigate(['/user', response.id]);
       });
   }
 
   refreshAccessToken() {
-    const refreshToken = this.cookieService.get('refresh_token');
-    const userId = this.cookieService.get('uid');
+    const refreshToken = sessionStorage.getItem('refresh_token');
+    const userId = sessionStorage.getItem('uid');
 
     return this.http.get<RefreshAccessTokenResponse>(
       REFRESH_ACCESS_TOKEN_ENDPOINT,
       {
         params: {
-          refreshToken: refreshToken,
-          userId: userId,
+          refreshToken: refreshToken!,
+          userId: userId!,
         },
       }
     );
   }
 
   logout() {
-    this.cookieService.deleteAll('/', this.env.cookieBaseDomain);
+    sessionStorage.clear();
     if (!this.getAccessToken()) {
       this.router.navigate(['/login']);
     }
